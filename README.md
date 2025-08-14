@@ -1,46 +1,95 @@
-## Persona AI API
+# Persona AI Chat Application
 
-Simple Express API that serves persona-based chat endpoints powered by OpenAI.
+A full-stack AI persona chat application with Express backend and React frontend, powered by OpenAI.
 
-### Requirements
+## Project Structure
+
+```
+personaAi/
+├── backend/           # Express API server
+│   ├── controllers/
+│   ├── routes/
+│   ├── server.js
+│   └── package.json
+├── frontend/          # React Vite application
+│   ├── src/
+│   ├── public/
+│   └── package.json
+├── package.json       # Root package.json with scripts
+└── README.md
+```
+
+## Requirements
 
 - Node.js >= 18
 - An OpenAI API key
 
-### Getting Started
+## Quick Start
 
-1. Clone the repo and install dependencies:
-
-```bash
-npm install
-```
-
-2. Create a `.env` file using `.env.example` as a reference:
+1. Clone the repo and install all dependencies:
 
 ```bash
-cp .env.example .env
-# then edit .env to add your values
+npm run install:all
 ```
 
-3. Run the server:
+2. Create environment files:
+
+```bash
+# Backend environment
+cp backend/.env.example backend/.env
+# Edit backend/.env to add your OpenAI API key
+```
+
+3. Run the full application (both frontend and backend):
 
 ```bash
 npm run dev
+```
+
+This will start:
+
+- Backend API on `http://localhost:3000`
+- Frontend on `http://localhost:5173`
+
+## Individual Commands
+
+### Backend Only
+
+```bash
+npm run dev:backend
 # or
+cd backend && npm run dev
+```
+
+### Frontend Only
+
+```bash
+npm run dev:frontend
+# or
+cd frontend && npm run dev
+```
+
+### Production
+
+```bash
+# Build frontend
+npm run build
+
+# Start backend
 npm start
 ```
 
-The server runs on `http://localhost:3000` by default.
+## Environment Variables
 
-### Environment Variables
+### Backend (.env)
 
 - `PORT`: Port for the HTTP server (default: 3000)
 - `CORS_ORIGIN`: Comma-separated list of allowed origins for CORS (e.g., `http://localhost:3000,http://localhost:5173`). Leave unset to allow all origins.
 - `OPENAI_API_KEY`: Your OpenAI API key
 
-### API
+## API Endpoints
 
-Base URL: `/api`
+Base URL: `http://localhost:3000/api`
 
 - `GET /api/health` — Health check
 - `GET /api/personas` — List available personas
@@ -48,7 +97,7 @@ Base URL: `/api`
 - `POST /api/chat` — Chat with a persona with optional `chatHistory`
 - `POST /api/chat/quick` — Quick single-message chat
 
-#### Example Requests
+### Example API Requests
 
 ```bash
 curl http://localhost:3000/api/health
@@ -80,19 +129,31 @@ curl -X POST http://localhost:3000/api/chat \
   }'
 ```
 
-### Project Structure
+## Available Personas
 
-```
-controllers/
-  personaController.js
-routes/
-  personaRoutes.js
-server.js
-```
+- **Hitesh Choudhary**: Tech Educator & Entrepreneur
+- **Piyush Garg**: Educator & Content Creator
 
-This structure is fine for a small API. For growth, consider adding `middlewares/`, `services/`, and `tests/` directories.
+## Development
 
-### Notes
+### Backend Development
 
-- CORS is configurable via `CORS_ORIGIN`.
-- The OpenAI SDK reads `OPENAI_API_KEY` from the environment.
+- Express.js with ES modules
+- OpenAI integration for chat responses
+- CORS configuration
+- Environment-based configuration
+
+### Frontend Development
+
+- React 18 with Vite
+- Hot module replacement
+- ESLint configuration
+- Build optimization
+
+## Notes
+
+- CORS is configurable via `CORS_ORIGIN` environment variable
+- The OpenAI SDK reads `OPENAI_API_KEY` from the environment
+- Frontend runs on port 5173 by default (Vite)
+- Backend runs on port 3000 by default
+- Use `npm run dev` to run both simultaneously

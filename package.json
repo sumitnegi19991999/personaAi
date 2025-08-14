@@ -1,26 +1,28 @@
 {
   "name": "personaai",
   "version": "1.0.0",
-  "main": "server.js",
-  "type": "module",
+  "description": "AI Persona Chat Application with Express backend and React frontend",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon --quiet server.js",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "start": "cd backend && npm start",
+    "build": "cd frontend && npm run build",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "keywords": [
+    "ai",
+    "chat",
+    "persona",
+    "openai",
+    "express",
+    "react"
+  ],
+  "author": "Sumit Negi",
   "license": "ISC",
-  "description": "Simple Express API for persona-based chat using OpenAI.",
-  "engines": {
-    "node": ">=18"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
-    "express": "^5.1.0",
-    "openai": "^5.12.2"
-  },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "concurrently": "^8.2.2"
   }
 }

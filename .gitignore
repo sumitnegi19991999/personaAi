@@ -1,9 +1,12 @@
 # Dependencies
 node_modules/
+*/node_modules/
 
 # Env files
 .env
 .env.*.local
+*/backend/.env
+*/backend/.env.*.local
 
 # Logs
 logs
@@ -26,6 +29,11 @@ dist/
 build/
 .cache/
 .tmp/
+*/frontend/dist/
+*/frontend/build/
 
 # Misc
 *.local
+
+# Frontend specific
+*/frontend/.vite/
