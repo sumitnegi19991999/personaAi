@@ -15,7 +15,7 @@ function App() {
 
   const fetchPersonas = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/personas");
+      const response = await fetch("/api/personas");
       const data = await response.json();
       if (data.success) {
         setPersonas(data.data);
@@ -36,7 +36,7 @@ function App() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/api/chat/quick", {
+      const response = await fetch("/api/chat/quick", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
