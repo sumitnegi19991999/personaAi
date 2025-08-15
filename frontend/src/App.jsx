@@ -1,21 +1,43 @@
 import { useState, useEffect } from "react";
-import "./App.css";
+import RetroConsole from "./components/RetroConsole";
 
 function App() {
   const [personas, setPersonas] = useState([]);
   const [selectedPersona, setSelectedPersona] = useState("");
-  const [message, setMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState([]);
+  const [chatHistories, setChatHistories] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     fetchPersonas();
+    loadChatHistories();
   }, []);
+
+  // Load chat histories from localStorage
+  const loadChatHistories = () => {
+    try {
+      const savedHistories = localStorage.getItem('persona-chat-histories');
+      if (savedHistories) {
+        setChatHistories(JSON.parse(savedHistories));
+      }
+    } catch (err) {
+      console.error("Error loading chat histories:", err);
+    }
+  };
+
+  // Save chat histories to localStorage
+  const saveChatHistories = (histories) => {
+    try {
+      localStorage.setItem('persona-chat-histories', JSON.stringify(histories));
+    } catch (err) {
+      console.error("Error saving chat histories:", err);
+    }
+  };
 
   const fetchPersonas = async () => {
     try {
-      const response = await fetch("/api/personas");
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${API_URL}/api/personas`);
       const data = await response.json();
       if (data.success) {
         setPersonas(data.data);
@@ -29,32 +51,49 @@ function App() {
     }
   };
 
-  const sendMessage = async () => {
-    if (!message.trim() || !selectedPersona) return;
+  // Handle persona selection change
+  const handlePersonaChange = (newPersonaId) => {
+    setSelectedPersona(newPersonaId);
+    setError(""); // Clear any existing errors when switching
+  };
+
+  const sendMessage = async (messageContent) => {
+    if (!messageContent || !selectedPersona) return;
 
     setLoading(true);
     setError("");
 
+    // Add user message to current persona's chat history
+    const userMessage = {
+      role: "user",
+      content: messageContent,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Update chat histories with new user message
+    const updatedHistories = {
+      ...chatHistories,
+      [selectedPersona]: [...(chatHistories[selectedPersona] || []), userMessage]
+    };
+    setChatHistories(updatedHistories);
+    saveChatHistories(updatedHistories);
+
     try {
-      const response = await fetch("/api/chat/quick", {
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${API_URL}/api/chat/quick`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           personaId: selectedPersona,
-          message: message.trim(),
+          message: messageContent,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        const newMessage = {
-          role: "user",
-          content: message.trim(),
-          timestamp: new Date().toISOString(),
-        };
         const aiResponse = {
           role: "assistant",
           content: data.data.response,
@@ -62,8 +101,13 @@ function App() {
           persona: data.data.persona,
         };
 
-        setChatHistory((prev) => [...prev, newMessage, aiResponse]);
-        setMessage("");
+        // Add AI response to current persona's chat history
+        const finalHistories = {
+          ...updatedHistories,
+          [selectedPersona]: [...updatedHistories[selectedPersona], aiResponse]
+        };
+        setChatHistories(finalHistories);
+        saveChatHistories(finalHistories);
       } else {
         setError(data.message || "Failed to send message");
       }
@@ -75,109 +119,19 @@ function App() {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+  // Get current persona's chat history
+  const currentChatHistory = chatHistories[selectedPersona] || [];
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>🤖 Persona AI Chat</h1>
-        <p>Chat with AI personas powered by OpenAI</p>
-      </header>
-
-      <main className="app-main">
-        <div className="persona-selector">
-          <label htmlFor="persona-select">Choose a Persona:</label>
-          <select
-            id="persona-select"
-            value={selectedPersona}
-            onChange={(e) => setSelectedPersona(e.target.value)}
-          >
-            {personas.map((persona) => (
-              <option key={persona.id} value={persona.id}>
-                {persona.name} - {persona.title}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="chat-container">
-          <div className="chat-messages">
-            {chatHistory.length === 0 ? (
-              <div className="welcome-message">
-                <p>👋 Welcome! Select a persona and start chatting.</p>
-                <p>Available personas:</p>
-                <ul>
-                  {personas.map((persona) => (
-                    <li key={persona.id}>
-                      <strong>{persona.name}</strong> - {persona.bio}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              chatHistory.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`message ${
-                    msg.role === "user" ? "user-message" : "ai-message"
-                  }`}
-                >
-                  {msg.role === "assistant" && msg.persona && (
-                    <div className="persona-info">
-                      <img
-                        src={msg.persona.avatar}
-                        alt={msg.persona.name}
-                        className="persona-avatar"
-                      />
-                      <span className="persona-name">{msg.persona.name}</span>
-                    </div>
-                  )}
-                  <div className="message-content">{msg.content}</div>
-                  <div className="message-time">
-                    {new Date(msg.timestamp).toLocaleTimeString()}
-                  </div>
-                </div>
-              ))
-            )}
-            {loading && (
-              <div className="message ai-message">
-                <div className="message-content">
-                  <div className="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-
-          <div className="chat-input">
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message here..."
-              disabled={loading}
-              rows={3}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={loading || !message.trim() || !selectedPersona}
-            >
-              {loading ? "Sending..." : "Send"}
-            </button>
-          </div>
-        </div>
-      </main>
-    </div>
+    <RetroConsole
+      personas={personas}
+      selectedPersona={selectedPersona}
+      setSelectedPersona={handlePersonaChange}
+      chatHistory={currentChatHistory}
+      onSendMessage={sendMessage}
+      loading={loading}
+      error={error}
+    />
   );
 }
 
