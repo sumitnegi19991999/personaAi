@@ -37,3 +37,23 @@ build/
 
 # Frontend specific
 */frontend/.vite/
+
+# Deployment artifacts and logs
+deployment-logs/
+.deploy/
+.deployment/
+*.tar.gz
+*.zip
+deployment.log
+deploy.log
+
+# Platform specific deployment files (generated during deploy)
+.vercel/
+.railway/
+.render/
+
+# Local environment files (keep .env.example)
+frontend/.env.local
+backend/.env.local
+
+.claude
